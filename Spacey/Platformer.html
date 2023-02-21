@@ -1,0 +1,148 @@
+
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Platform Game | Work In Progress </title>
+        <script src="assets/js/phaser.min.js"></script>
+        <script src="assets/js/phaser.js"></script>
+        <style>
+            body {
+                background: teal;
+            }
+            canvas {
+                margin: auto;
+            }
+            </style>
+    </head>
+<body>
+
+<script type="text/javascript">
+    var game = new Phaser.Game(330,230, Phaser.AUTO, '',{preload:preload, create:create, update:update});
+    function preload() {
+        //game.load.spritesheet('viking', 'assets/images/spriteViking.png',32,32); 
+        game.load.spritesheet('link', 'assets/images/spritesheet.png',32,32); 
+        game.load.image('bg', 'assets/images/backgroundSprite.png'); 
+        game.load.tilemap('level1', 'assets/Platformer/Levels/test-tilemap.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.image('tile-testmap', 'assets/images/tile-testmap.png'); 
+    }
+    function create() {
+       
+        //creating Physics for our player.
+        this.physics.startSystem(Phaser.Physics.ARCADE);  
+        this.physics.arcade.gravity.y = 1200; 
+        //placing the background
+        background = game.add.tileSprite(430,230,600,230,'bg');  
+        //adding level1 our tilemap to mymap
+        mymap = game.add.tilemap('level1');
+        //addin the tileset
+        mymap.addTilesetImage('tile-testmap');   
+        //creating the layers of our tileset        
+        layer5 = mymap.createLayer('foreground'); 
+        layer4 = mymap.createLayer('backgroundObjs');
+        layer6 = mymap.createLayer('roof');
+        layer3 = mymap.createLayer('water');
+        layer1 = mymap.createLayer('dirt');
+        layer2 = mymap.createLayer('stone');
+        layer7 = mymap.createLayer('backgroundObj');
+        //resizing to fit layer1 ?
+        layer1.resizeWorld(); 
+        //Making collisions
+        mymap.setCollisionBetween(0,200,true, 'roof');  
+        mymap.setCollisionBetween(1,150,true,'stone');  
+        mymap.setCollisionBetween(1,150,true,'dirt');
+        //Player settings
+        player = game.add.sprite(50, 400, 'link'); 
+        player.anchor.setTo(0.5,0.5);
+        game.physics.enable(player); 
+        game.camera.follow(player);  
+        //KeyPressed is the variable i'm using for to listen for keyboard presses
+        KeyPressed = game.input.keyboard.createCursorKeys();
+        //Player animations
+        player.animations.add('walk',[0,1,2,3],5,true); 
+        player.animations.add('idle',[19,20,21,22],2,true);
+    }
+    function update() {
+        //Background & Camera
+        background.x = game.camera.x * 0.2;  
+        //colliding the player with layers 1 & 2
+        game.physics.arcade.collide(player, layer1);   
+        game.physics.arcade.collide(player, layer2);  
+        //setting our players velocity to 0
+        player.body.velocity.x=0;  
+        //Checking if player went off the map.
+        if(player.y > 500) {
+                player.destroy();
+                respawn();
+        }
+        //Walking left movement.
+        if (KeyPressed.left.isDown ){
+                player.scale.x = -1;
+                player.body.velocity.x = -100;
+              player.animations.play('walk');
+        }
+        //Walking right movement.
+        else if (KeyPressed.right.isDown) {
+                player.scale.x = 1;
+                player.body.velocity.x= 100;
+              player.animations.play('walk');
+        }
+        //Jumping movement
+        if (KeyPressed.up.isDown){
+                player.loadTexture('link', 4);
+                if(player.body.onFloor()){
+                  player.body.velocity.y = -320;
+                }
+        }
+        
+        //Checking to see if the player is moving, if not we idle.
+        if(KeyPressed.left.isUp && KeyPressed.right.isUp)  {      
+            player.animations.play('idle'); 
+        }
+    }
+    //respawning function.
+    function respawn() {
+        //Player Settings.
+        player = game.add.sprite(50, 400, 'link');   
+        game.physics.enable(player); 
+        player.anchor.setTo(0.5,0.5); 
+        game.camera.follow(player); 
+        player.animations.add('walk',[0,1,2],5,true); 
+    }
+</script>
+</body>
+</html>
+<!--
+ if(player.y > 500) {
+            player.destroy();
+            respawn();
+        }
+        //left & right movements
+        if (KeyPressed.left.isDown ){  
+                player.scale.x = -1;  
+                player.body.velocity.x = -100;
+                player.animations.play('idle');  
+        }
+        else if (KeyPressed.right.isDown) {
+                player.scale.x = 1;
+                player.body.velocity.x= 100;
+                player.animations.play('idle');
+        }
+        else {
+                player.loadTexture('viking', 0);   
+        }
+        if (KeyPressed.up.isDown){
+         player.loadTexture('viking', 4);   
+            if(player.body.onFloor()){   
+             player.body.velocity.y = -320;   
+            }
+        }
+        
+        if(KeyPressed.left.isUp && KeyPressed.right.isUp)  {      
+            player.animations.play('idle'); 
+        }
+
+        else {
+                //console.log("working");
+                player.loadTexture('viking', 0);
+                player.animations.play('idle');
+        }
